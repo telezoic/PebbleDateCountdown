@@ -10,14 +10,16 @@
 #include <PDUtils.h>
 
 static char THEME[6] = "dark";
-static int EVENT_MONTH = 1;
-static int EVENT_DAY = 1;
-static int EVENT_YEAR = 14;
-static int EVENT_HOUR = 12;
+static int EVENT_MONTH = 9;
+static int EVENT_DAY = 8;
+static int EVENT_YEAR = 15;
+static int EVENT_HOUR = 8;
 static int EVENT_MINUTE = 0;
-static char EVENT_LABEL[255] = "the event";
+static char EVENT_LABEL[255] = "";
 
 Window *window;
+static BitmapLayer *s_background_layer;
+static GBitmap *s_background_bitmap;
 TextLayer *label_layer_time;
 TextLayer *label_layer_countdown;
 TextLayer *label_layer_text_top;
@@ -170,38 +172,45 @@ static void init() {
 	
 	Layer *window_layer = window_get_root_layer(window);
 	GRect bounds = layer_get_bounds(window_layer);
+  
+  
+    // Add  bitmap layer  
+  s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ACCESS_BW);
+  s_background_layer = bitmap_layer_create(GRect(-30, -10, 200, 200));
+  bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_background_layer));
 	
-	// Add time layer
-	label_layer_time = text_layer_create(GRect(0, 13, 144, 30));
+  // Add time layer
+	label_layer_time = text_layer_create(GRect(0, 8, 142, 30));
 	text_layer_set_text_color(label_layer_time, GColorBlack);
 	text_layer_set_background_color(label_layer_time, GColorClear);
 	text_layer_set_text_alignment(label_layer_time, GTextAlignmentCenter);
-	text_layer_set_font(label_layer_time, fonts_get_system_font(FONT_KEY_GOTHIC_28));
+	text_layer_set_font(label_layer_time, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(label_layer_time));
 	
-	// Add days remaining layer
-	label_layer_countdown = text_layer_create(GRect(0, 56, 144, 55));
-	text_layer_set_text_color(label_layer_countdown, GColorBlack);
-	text_layer_set_background_color(label_layer_countdown, GColorClear);
-	text_layer_set_text_alignment(label_layer_countdown, GTextAlignmentCenter);
-	text_layer_set_font(label_layer_countdown, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
-	layer_add_child(window_get_root_layer(window), text_layer_get_layer(label_layer_countdown));
-	
-	// Add top text layer
-	label_layer_text_top = text_layer_create(GRect(0, 110, 144, 23));
+  	// Add top text layer
+	label_layer_text_top = text_layer_create(GRect(0, 133, 163, 23));
 	text_layer_set_text_color(label_layer_text_top, GColorBlack);
 	text_layer_set_background_color(label_layer_text_top, GColorClear);
 	text_layer_set_text_alignment(label_layer_text_top, GTextAlignmentCenter);
-	text_layer_set_text(label_layer_text_top, "Days Until");
-	text_layer_set_font(label_layer_text_top, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+	text_layer_set_text(label_layer_text_top, "days to go");
+	text_layer_set_font(label_layer_text_top, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(label_layer_text_top));
+  
+	// Add days remaining layer - X : days to go
+	label_layer_countdown = text_layer_create(GRect(0, 133, 66, 55));
+	text_layer_set_text_color(label_layer_countdown, GColorBlack);
+	text_layer_set_background_color(label_layer_countdown, GColorClear);
+	text_layer_set_text_alignment(label_layer_countdown, GTextAlignmentCenter);
+	text_layer_set_font(label_layer_countdown, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+	layer_add_child(window_get_root_layer(window), text_layer_get_layer(label_layer_countdown));
 	
 	// Add bottom text layer
 	label_layer_text_bottom = text_layer_create(GRect(0, 130, 144, 23));
 	text_layer_set_text_color(label_layer_text_bottom, GColorBlack);
 	text_layer_set_background_color(label_layer_text_bottom, GColorClear);
 	text_layer_set_text_alignment(label_layer_text_bottom, GTextAlignmentCenter);
-	text_layer_set_font(label_layer_text_bottom, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+	text_layer_set_font(label_layer_text_bottom, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(label_layer_text_bottom));
 	
 	// Create the inverter layer
@@ -217,12 +226,16 @@ static void init() {
 
 static void deinit() {
 	window_destroy(window);
+  gbitmap_destroy(s_background_bitmap);
+  // Destroy BitmapLayer
+  bitmap_layer_destroy(s_background_layer); 
 	text_layer_destroy(label_layer_time);
 	text_layer_destroy(label_layer_countdown);
 	text_layer_destroy(label_layer_text_top);
 	text_layer_destroy(label_layer_text_bottom);
 	inverter_layer_destroy(inverter_layer);
-	
+
+  
 	tick_timer_service_unsubscribe();
 	app_message_deregister_callbacks();
 }
